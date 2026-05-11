@@ -17,6 +17,7 @@ library(here)
 library(janitor)
 library(snakecase)
 library(lubridate)
+library(dplyr)
 
 # wrapping axis labels
 library(scales)
@@ -64,17 +65,17 @@ ncos_sites <- sites |>
 ```
 
 # Figure planning 
-Final visual goal: compare the abundances of the most common inverts found at ncos in 2025
+Final visual goal: compare the abundances of the most common inverts found at ncos in 2024
 
-# Create dataframe
+# Create data frame
 
 ```{r}
-#| label: creating-dataframe
+#| label: creating-data-frame
 
-invert_2025 <- aq_ins |>
+invert_2024 <- aq_ins |>
   clean_names() |>
   rename(date = date_on_vial) |>
-  filter(year(date) == 2025) |>
+  filter(year(date) == 2024) |>
   select(ostracod,
          copepod,
          hemiptera_corixidae_boatman,
@@ -89,5 +90,146 @@ invert_2025 <- aq_ins |>
   ) |>
   group_by(taxon) |>
   summarise(total_abundance = sum(abundance), .groups = "drop")
+```
+
+# Plot 
+
+```{r}
+library(tidyverse)
+library(patchwork)
+
+invert_2024_plot <- invert_2024 |>
+  mutate(
+    abundance_pct = total_abundance / sum(total_abundance),
+    pct_scaled = 10 - (abundance_pct * 10),
+    pct_label = paste0(round(abundance_pct * 100, 1), "%")
+  )
+
+invert_list <- list()
+
+for(i in 1:nrow(invert_2024_plot)){
+  invert_list[[i]] <- tibble(
+    taxon = invert_2024_plot$taxon[i],
+    x = c(0, 10, 10, 0),
+    y = c(10, 10, rep(invert_2024_plot$pct_scaled[i], 2)),
+    pct_label = invert_2024_plot$pct_label[i]
+  )
+}
+
+line_data <- tibble(
+  x = 0,
+  xend = 10,
+  y = 10,
+  yend = 10
+)
+
+main_plot <- 
+  ggplot(data = bind_rows(invert_list)) +
+  geom_segment(data = line_data,
+               aes(x = x, xend = xend, y = y, yend = yend),
+               linewidth = 2,
+               color = "#cdcdc0",
+               inherit.aes = FALSE) +
+  geom_polygon(aes(x = x, 
+                   y = y,
+                   group = taxon),
+               fill = "#0c1931") +
+  geom_text(aes(x = 5, y = 0, label = taxon),
+            size = 3,
+            family = "sans",
+            fontface = "bold",
+            color = "#626d71") +
+  geom_text(aes(x = 5, y = 3, label = pct_label),
+            size = 3,
+            family = "sans",
+            fontface = "bold",
+            color = "black") +
+  facet_wrap(~taxon, nrow = 2) +
+  coord_polar() +
+  ylim(0, 10) +
+  labs(title = "Aquatic Invertebrate Abundance in 2024") +
+  theme_void() +
+  theme(
+    strip.background = element_blank(),
+    strip.text = element_blank(),
+    plot.title = element_text(hjust = 0.5, face = "bold", 
+                              size = 24, color = "black", family = "sans"),
+    panel.background = element_rect(fill = "#f4f2f2", color = NA),
+    plot.background = element_rect(fill = "#f4f2f2", color = NA),
+    plot.margin = margin(5, 0, 0, 0)
+  )
+
+legend_data <- tibble(
+  type = c(10, 25, 50, 75),
+  type_scales = c(1, 2.5, 5, 7.5),
+  label = paste0(type, "%"),
+  y = 10 - type_scales
+)
+
+legend_list <- list()
+
+for(i in 1:nrow(legend_data)){
+  legend_list[[i]] <- tibble(
+    label = legend_data$label[i],
+    type = legend_data$type[i],
+    x = c(0, 10, 10, 0),
+    y = c(10, 10, rep(legend_data$y[i], 2))
+  )
+}
+
+legend_plot <- 
+  ggplot(data = bind_rows(legend_list)) +
+  geom_segment(data = line_data,
+               aes(x = x, xend = xend, y = y, yend = yend),
+               linewidth = 2,
+               color = "#cdcdc0",
+               inherit.aes = FALSE) +
+  geom_polygon(aes(x = x, 
+                   y = y,
+                   group = type),
+               fill = "#0c1931") +
+  facet_wrap(~label, nrow = 1) +
+  coord_polar() +
+  ylim(0, 10) +
+  theme_void() +
+  theme(
+    strip.text = element_text(face = "bold", color = "#0c1931",
+                              family = "sans"),
+    panel.background = element_rect(fill = "#f4f2f2", color = NA),
+    plot.background = element_rect(fill = "#f4f2f2", color = NA),
+    plot.margin = margin(t = 0, r = 0, b = 0, l = 30)
+  )
+
+title_plot <- 
+  ggplot() +
+  geom_text(aes(x = 0, y = 2, label = "Percentage of Total Invertebrate Abundance"),
+            family = "sans",
+            fontface = "bold",
+            hjust = 0,
+            size = 3) +
+  geom_text(aes(x = 0, y = 1,
+                label = "The thickness of the inner perimeter of each circle\nrepresents the percentage of total invertebrate abundance\nmade up by each taxon in 2024."),
+            family = "sans",
+            hjust = 0,
+            size = 2) +
+  ylim(0, 5) +
+  scale_x_continuous(limits = c(0, 3), expand = c(0, 0)) +
+  theme_void() +
+  theme(
+    panel.background = element_rect(fill = "#f4f2f2", color = NA),
+    plot.background = element_rect(fill = "#f4f2f2", color = NA),
+    plot.margin = margin(0, 0, 0, 0)
+  )
+
+layout <- c(
+  area(t = 1, l = 1, b = 18, r = 15),
+  area(t = 19, l = 1, b = 20, r = 5),
+  area(t = 16, l = 6, b = 20, r = 15)
+)
+
+final_plot <- main_plot + legend_plot + title_plot + 
+  plot_layout(design = layout)
+
+print(final_plot)
 ```
 
