@@ -106,3 +106,71 @@ invert_2024 <- aq_ins |>
   summarise(total_abundance = sum(abundance), .groups = "drop")
 ```
 
+
+```{r}
+#| fig-width: 8
+#| fig-height: 8
+#| out-width: "100%"
+
+ring_data <- invert_2024 |>
+  arrange(desc(total_abundance)) |>
+  mutate(
+    abundance_pct = total_abundance / sum(total_abundance),
+    pct_label = paste0(round(abundance_pct * 100, 1), "%"),
+    label = paste(taxon, pct_label),
+    ring = row_number(),
+    inner = ring,
+    outer = ring + 0.45,
+    start = 0,
+    end = abundance_pct * 100
+  )
+
+final_plot <- ggplot(ring_data) +
+  geom_rect(
+    aes(
+      xmin = start,
+      xmax = end,
+      ymin = inner,
+      ymax = outer,
+      group = taxon
+    ),
+    fill = "#0c1931"
+  ) +
+  geom_rect(
+    aes(
+      xmin = 0,
+      xmax = 100,
+      ymin = inner,
+      ymax = outer,
+      group = taxon
+    ),
+    fill = NA,
+    color = "#cdcdc0",
+    linewidth = 2
+  ) +
+  geom_text(
+    aes(
+      x = 0,
+      y = outer + 0.2,
+      label = label
+    ),
+    hjust = 0,
+    size = 3,
+    fontface = "bold"
+  ) +
+  coord_polar(theta = "x", start = pi / 2) +
+  scale_x_continuous(limits = c(0, 100), expand = c(0, 0)) +
+  scale_y_continuous(limits = c(0, max(ring_data$outer) + 1)) +
+  labs(title = "Aquatic Invertebrate\nAbundance in 2024") +
+  theme_void() +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
+    panel.background = element_rect(fill = "#f4f2f2", color = NA),
+    plot.background = element_rect(fill = "#f4f2f2", color = NA),
+    legend.position = "none"
+  )
+
+final_plot
+```
+
+
