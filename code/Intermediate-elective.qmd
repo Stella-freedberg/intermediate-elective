@@ -5,7 +5,7 @@ date: "05-10-2026"
 format: pdf
 ---
 
-## Packages
+# Packages
 
 ```{r}
 #| label: packages
@@ -16,6 +16,7 @@ library(tidyverse)
 library(here)
 library(janitor)
 library(snakecase)
+library(lubridate)
 
 # wrapping axis labels
 library(scales)
@@ -30,7 +31,7 @@ library(naniar)
 library(patchwork)
 ```
 
-## Data
+# Data
 
 ```{r}
 #| label: data
@@ -52,3 +53,41 @@ water_quality <- read_xlsx(here("data", "Aquatic Sampling Data-2026-03-10.xlsx")
                            sheet = "Water Quality",
                            na = c("", "n/a", "N/A", "over", "173+")) 
 ```
+
+```{r}
+#| label: ncos-site-object
+
+# creating new object from sites
+ncos_sites <- sites |> 
+  # filter to only include NCOS sites sampled four times a year
+  filter(sector == "NCOS" & sampling_frequency == "Quarterly")
+```
+
+# Figure planning 
+Final visual goal: compare the abundances of the most common inverts found at ncos in 2025
+
+# Create dataframe
+
+```{r}
+#| label: creating-dataframe
+
+invert_2025 <- aq_ins |>
+  clean_names() |>
+  rename(date = date_on_vial) |>
+  filter(year(date) == 2025) |>
+  select(ostracod,
+         copepod,
+         hemiptera_corixidae_boatman,
+         cladocera,
+         nematode) |>
+  pivot_longer(cols = ostracod:nematode,
+               names_to = "taxon",
+               values_to = "abundance") |>
+  mutate(
+    abundance = replace_na(abundance, 0),
+    taxon = str_to_title(str_replace_all(taxon, "_", " "))
+  ) |>
+  group_by(taxon) |>
+  summarise(total_abundance = sum(abundance), .groups = "drop")
+```
+
