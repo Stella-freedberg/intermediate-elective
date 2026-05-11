@@ -1,0 +1,7 @@
+---
+title: "Intermediate Elective"
+author: "Stella Freedberg"
+date: "05-10-2026"
+format: pdf
+---
+
