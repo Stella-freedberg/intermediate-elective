@@ -10,6 +10,7 @@ format: pdf
 ```{r}
 #| label: packages
 #| message: false
+#| warning: false
 
 # general use and cleaning
 library(tidyverse)
@@ -37,6 +38,7 @@ library(patchwork)
 ```{r}
 #| label: data
 #| message: false
+#| warning: false
 
 # taxonomic information
 taxon_list <- read_csv(here("data", "taxon_list.csv")) 
@@ -66,7 +68,7 @@ ncos_sites <- sites |>
 
 # 1. Explain your inspiration 
 
-- I picked the spiral looking graphic labled 2021_05_wealth_income graphic by Ijeamaka Anyenes. 
+- I picked the spiral looking graphic labled 2021_06_dubois_data graphic by Ijeamaka Anyenes. 
 - This graphic makes sense for my dataset of choice because it is able to display differences in abundance in a fun yet clear and simple way. 
 - The visualization will show the 5 most abundant inverts during 2024. Each line will represent a different invert and have its own color while the length of the line represents abundance.
 
@@ -107,70 +109,5 @@ invert_2024 <- aq_ins |>
 ```
 
 
-```{r}
-#| fig-width: 8
-#| fig-height: 8
-#| out-width: "100%"
-
-ring_data <- invert_2024 |>
-  arrange(desc(total_abundance)) |>
-  mutate(
-    abundance_pct = total_abundance / sum(total_abundance),
-    pct_label = paste0(round(abundance_pct * 100, 1), "%"),
-    label = paste(taxon, pct_label),
-    ring = row_number(),
-    inner = ring,
-    outer = ring + 0.45,
-    start = 0,
-    end = abundance_pct * 100
-  )
-
-final_plot <- ggplot(ring_data) +
-  geom_rect(
-    aes(
-      xmin = start,
-      xmax = end,
-      ymin = inner,
-      ymax = outer,
-      group = taxon
-    ),
-    fill = "#0c1931"
-  ) +
-  geom_rect(
-    aes(
-      xmin = 0,
-      xmax = 100,
-      ymin = inner,
-      ymax = outer,
-      group = taxon
-    ),
-    fill = NA,
-    color = "#cdcdc0",
-    linewidth = 2
-  ) +
-  geom_text(
-    aes(
-      x = 0,
-      y = outer + 0.2,
-      label = label
-    ),
-    hjust = 0,
-    size = 3,
-    fontface = "bold"
-  ) +
-  coord_polar(theta = "x", start = pi / 2) +
-  scale_x_continuous(limits = c(0, 100), expand = c(0, 0)) +
-  scale_y_continuous(limits = c(0, max(ring_data$outer) + 1)) +
-  labs(title = "Aquatic Invertebrate\nAbundance in 2024") +
-  theme_void() +
-  theme(
-    plot.title = element_text(hjust = 0.5, size = 20, face = "bold"),
-    panel.background = element_rect(fill = "#f4f2f2", color = NA),
-    plot.background = element_rect(fill = "#f4f2f2", color = NA),
-    legend.position = "none"
-  )
-
-final_plot
-```
 
 
