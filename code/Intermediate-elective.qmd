@@ -19,6 +19,7 @@ library(janitor)
 library(snakecase)
 library(lubridate)
 library(dplyr)
+library(glue)
 
 # wrapping axis labels
 library(scales)
@@ -31,6 +32,10 @@ library(naniar)
 
 # arranging plots
 library(patchwork)
+```
+
+```{r}
+extrafont::loadfonts()
 ```
 
 # Data
@@ -105,9 +110,79 @@ invert_2024 <- aq_ins |>
     taxon = str_to_title(str_replace_all(taxon, "_", " "))
   ) |>
   group_by(taxon) |>
-  summarise(total_abundance = sum(abundance), .groups = "drop")
+  summarise(total_abundance = sum(abundance), .groups = "drop") |> 
+  arrange(total_abundance)
 ```
 
 
+```{r}
+max_x <- max(invert_2024$total_abundance) / 1.5
 
+slope <- (2-0) / (0 - max_x)
+```
+
+```{r}
+invert_spiral <- invert_2024 |>
+  mutate(
+    taxon = as.factor(taxon),
+    y = seq(12, by = -3, length.out = n()),
+    x = 0
+  ) |>
+  rowwise() |>
+  mutate(
+    xend = min(total_abundance, max_x),
+    yend = slope * xend + y
+  ) |>
+  mutate(
+    y_2 = yend,
+    x_2 = 0,
+    xend_2 = if_else(total_abundance <= max_x,
+                     NA_real_,
+                     total_abundance - max_x),
+    yend_2 = slope * xend_2 + y_2
+  )
+```
+
+```{r}
+invert_label <- invert_spiral |>
+  select(taxon, total_abundance, y, x) |>
+  mutate(
+    label = glue("{taxon} --- {total_abundance}")
+  )
+```
+
+```{r}
+#| fig-height: 7
+#| fig-width: 7
+ggplot(data = invert_spiral) +
+  geom_segment(aes(x = x, xend = xend,
+                   y = y, yend = yend,
+                   color = taxon),
+               size = 5) +
+  geom_text(data = invert_label,
+            aes(x = x, y = y,
+                label = label),
+            size = 2.5,
+            hjust = 1) +
+  labs(
+    title = "Total abundance of the most common inverts at NCOS in 2024",
+    caption = "Source: 2024 invertebrate abundance data"
+  ) +
+  coord_polar(clip = "off") +
+  ylim(-25, 15) +
+  xlim(-25, max(invert_2024$total_abundance)/1.5) +
+  theme_void() +
+  theme(
+    plot.background = element_rect(fill = "white",
+                                   color = NA),
+    plot.margin = margin(t = 20, r = 5, b = 5, l = 5),
+    panel.background = element_rect(fill = "white",
+                                    color = NA),
+    plot.title = element_text(hjust = 0.5,
+                              face = "bold",
+                              size = 15),
+    plot.caption = element_text(size = 6),
+    legend.position = "none"
+  )
+```
 
