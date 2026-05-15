@@ -93,7 +93,7 @@ knitr:: include_graphics(here("code","IMG_2970.jpg"))
 ```{r}
 #| label: creating-data-frame
 
-# create new dataframe
+# create new data frame
 invert_2024 <- aq_ins |>
   clean_names() |>
   rename(date = date_on_vial) |>
@@ -123,29 +123,44 @@ invert_2024 <- aq_ins |>
 
 
 ```{r}
-max_x <- max(invert_2024$total_abundance) / 1.5
+#| label: dubois-equation
 
+# find max x value for the end of the spiral and divid by 1.5 to make the 
+# spiral wrap tighter 
+max_x <- max(invert_2024$total_abundance) / 1.5
+# calculate the slope to create a spiral shape 
 slope <- (2-0) / (0 - max_x)
 ```
 
 ```{r}
+#| label: data-frame-for-spiral
+
+# create new data frame for spiral segments
 invert_spiral <- invert_2024 |>
+  # give each taxon a different starting y position and separate segments 
   mutate(
     taxon = as.factor(taxon),
     y = seq(12, by = -3, length.out = n()),
+    # start all segments at x = 0
     x = 0
   ) |>
+  # go one taxon at a time 
   rowwise() |>
+  # the segments either go to taxon abundance or stop at x max 
   mutate(
     xend = min(total_abundance, max_x),
+    # use slope find the ending y position
     yend = slope * xend + y
   ) |>
+  # start second second where the first one ends so it wraps around
   mutate(
     y_2 = yend,
+    # if abundance is larger than max x create a second segment 
     x_2 = 0,
     xend_2 = if_else(total_abundance <= max_x,
                      NA_real_,
                      total_abundance - max_x),
+    # calculate ending y position of second segment 
     yend_2 = slope * xend_2 + y_2
   )
 ```
