@@ -233,3 +233,6 @@ ggsave(filename = "invert_spiral_plot.png")
 ```
 
 # 4. Describe your process 
+- In order to use someone elses code as a visualization I first ran through their example to try to see what each chunk of code did. I then made a data frame that had the same lay out as the original code. Using this data frame I replaced all of the codes specific to the old data frame with the new code I had made.
+- The hardest part of this visualization was it's circularity. I struggled to make the segments bend the way I wanted them to and it was difficult to interpret some of the original code that created the segment slopes.
+- Similar to the previous question I think that this plots circularity distinguishes it from anything we have made in class. In class we have mainly focused on the basic plot configurations while this one is less conventional. 
