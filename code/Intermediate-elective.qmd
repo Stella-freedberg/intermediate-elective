@@ -93,24 +93,31 @@ knitr:: include_graphics(here("code","IMG_2970.jpg"))
 ```{r}
 #| label: creating-data-frame
 
+# create new dataframe
 invert_2024 <- aq_ins |>
   clean_names() |>
   rename(date = date_on_vial) |>
+  # only include 5 listed invert species sampled in 2024
   filter(year(date) == 2024) |>
   select(ostracod,
          copepod,
          hemiptera_corixidae_boatman,
          cladocera,
          nematode) |>
+  # change names of columns
   pivot_longer(cols = ostracod:nematode,
                names_to = "taxon",
                values_to = "abundance") |>
+  # replace underscores with spaces 
   mutate(
     abundance = replace_na(abundance, 0),
     taxon = str_to_title(str_replace_all(taxon, "_", " "))
   ) |>
+  # group by taxon
   group_by(taxon) |>
+  # add up total abundance for each taxon
   summarise(total_abundance = sum(abundance), .groups = "drop") |> 
+  # aggrange taxa from highest to lowest abundance
   arrange(total_abundance)
 ```
 
@@ -152,6 +159,7 @@ invert_label <- invert_spiral |>
 ```
 
 ```{r}
+#| warning: false
 #| fig-height: 7
 #| fig-width: 7
 ggplot(data = invert_spiral) +
