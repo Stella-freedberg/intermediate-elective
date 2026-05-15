@@ -60,6 +60,7 @@ sites <- read_xlsx(here("data", "Aquatic Sampling Data-2026-03-10.xlsx"),
 water_quality <- read_xlsx(here("data", "Aquatic Sampling Data-2026-03-10.xlsx"),
                            sheet = "Water Quality",
                            na = c("", "n/a", "N/A", "over", "173+")) 
+
 ```
 
 ```{r}
@@ -69,6 +70,7 @@ water_quality <- read_xlsx(here("data", "Aquatic Sampling Data-2026-03-10.xlsx")
 ncos_sites <- sites |> 
   # filter to only include NCOS sites sampled four times a year
   filter(sector == "NCOS" & sampling_frequency == "Quarterly")
+
 ```
 
 # 1. Explain your inspiration 
@@ -82,6 +84,7 @@ ncos_sites <- sites |>
 
 ```{r}
 #| label: figure-sketch
+
 knitr:: include_graphics(here("code","IMG_2970.jpg"))
 
 ```
@@ -119,6 +122,7 @@ invert_2024 <- aq_ins |>
   summarise(total_abundance = sum(abundance), .groups = "drop") |> 
   # aggrange taxa from highest to lowest abundance
   arrange(total_abundance)
+
 ```
 
 
@@ -130,6 +134,7 @@ invert_2024 <- aq_ins |>
 max_x <- max(invert_2024$total_abundance) / 1.5
 # calculate the slope to create a spiral shape 
 slope <- (2-0) / (0 - max_x)
+
 ```
 
 ```{r}
@@ -163,38 +168,53 @@ invert_spiral <- invert_2024 |>
     # calculate ending y position of second segment 
     yend_2 = slope * xend_2 + y_2
   )
+
 ```
 
 ```{r}
+#| label: label-each-segment
+
+# create new data frame with labels for each taxon
 invert_label <- invert_spiral |>
+  # keep only columns needed to make labels 
   select(taxon, total_abundance, y, x) |>
+  # combine taxon name and abundance 
   mutate(
     label = glue("{taxon} --- {total_abundance}")
   )
+
 ```
 
 ```{r}
+#| label: spiral-figure
 #| warning: false
 #| fig-height: 7
 #| fig-width: 7
+
+# insert spiral style abundance plot 
 ggplot(data = invert_spiral) +
+  # have each segment be a different taxon and the length represent abundance 
   geom_segment(aes(x = x, xend = xend,
                    y = y, yend = yend,
                    color = taxon),
                size = 5) +
+  # add labels showing taxon name and abundance 
   geom_text(data = invert_label,
             aes(x = x, y = y,
                 label = label),
             size = 2.5,
             hjust = 1) +
+  # add title 
   labs(
-    title = "Total abundance of the most common inverts at NCOS in 2024",
-    caption = "Source: 2024 invertebrate abundance data"
+    title = "Total abundance of the most common inverts at NCOS in 2024"
   ) +
+  # convert straight segments to curved ones 
   coord_polar(clip = "off") +
   ylim(-25, 15) +
   xlim(-25, max(invert_2024$total_abundance)/1.5) +
+  # remove any background markings 
   theme_void() +
+  # customize plot background and text
   theme(
     plot.background = element_rect(fill = "white",
                                    color = NA),
@@ -205,7 +225,9 @@ ggplot(data = invert_spiral) +
                               face = "bold",
                               size = 15),
     plot.caption = element_text(size = 6),
+    # remove legend
     legend.position = "none"
   )
+
 ```
 
