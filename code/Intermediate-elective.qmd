@@ -91,7 +91,6 @@ knitr:: include_graphics(here("code","IMG_2970.jpg"))
 
 #3. Code your figure 
 
-## Create data frame
 
 ```{r}
 #| label: creating-data-frame
@@ -229,5 +228,8 @@ ggplot(data = invert_spiral) +
     legend.position = "none"
   )
 
+ggsave(filename = "invert_spiral_plot.png")
+
 ```
 
+# 4. Describe your process 
