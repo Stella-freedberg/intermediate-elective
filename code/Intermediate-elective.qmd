@@ -206,7 +206,8 @@ ggplot(data = invert_spiral) +
             hjust = 1) +
   # add title 
   labs(
-    title = "Total abundance of the most common inverts at NCOS in 2024"
+    title = "Total abundance of the most common 
+    inverts at NCOS in 2024"
   ) +
   # convert straight segments to curved ones 
   coord_polar(clip = "off") +
@@ -222,6 +223,8 @@ ggplot(data = invert_spiral) +
     panel.background = element_rect(fill = "#e4d2c1",
                                     color = NA),
     plot.caption = element_text(size = 6),
+    plot.title = element_text(hjust = 0.5, family = "Cutive",
+                                  face = "bold", size = 15),
     # remove legend
     legend.position = "none"
   )
