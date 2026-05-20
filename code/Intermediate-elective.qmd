@@ -20,6 +20,7 @@ library(snakecase)
 library(lubridate)
 library(dplyr)
 library(glue)
+library(extrafont)
 
 # wrapping axis labels
 library(scales)
@@ -215,18 +216,17 @@ ggplot(data = invert_spiral) +
   theme_void() +
   # customize plot background and text
   theme(
-    plot.background = element_rect(fill = "white",
+    plot.background = element_rect(fill = "#e4d2c1",
                                    color = NA),
     plot.margin = margin(t = 20, r = 5, b = 5, l = 5),
-    panel.background = element_rect(fill = "white",
+    panel.background = element_rect(fill = "#e4d2c1",
                                     color = NA),
-    plot.title = element_text(hjust = 0.5,
-                              face = "bold",
-                              size = 15),
     plot.caption = element_text(size = 6),
     # remove legend
     legend.position = "none"
   )
+
+
 
 ggsave(filename = "invert_spiral_plot.png")
 
