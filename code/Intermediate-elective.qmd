@@ -191,7 +191,7 @@ invert_label <- invert_spiral |>
 #| label: spiral-figure
 #| warning: false
 #| fig-height: 7
-#| fig-width: 9
+#| fig-width: 11
 
 # insert spiral style abundance plot 
 ggplot(data = invert_spiral) +
@@ -230,8 +230,14 @@ ggplot(data = invert_spiral) +
                                   face = "bold", size = 15),
     # remove legend
     legend.position = "none"
-  )
-
+  ) +
+scale_color_manual(values = c(
+  "Nematode" = "#eaafa6",
+  "Hemiptera Corixidae Boatman" = "#9da0b0",
+  "Cladocera" = "#c4a58f",
+  "Copepod" = "#ecb025",
+  "Ostracod" = "#dc354a"
+))
 
 
 ggsave(filename = "invert_spiral_plot.png")
