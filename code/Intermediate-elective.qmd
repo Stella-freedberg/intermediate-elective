@@ -36,6 +36,8 @@ library(patchwork)
 ```
 
 ```{r}
+#| message: false
+#| warning: false
 extrafont::loadfonts()
 ```
 
@@ -189,7 +191,7 @@ invert_label <- invert_spiral |>
 #| label: spiral-figure
 #| warning: false
 #| fig-height: 7
-#| fig-width: 7
+#| fig-width: 9
 
 # insert spiral style abundance plot 
 ggplot(data = invert_spiral) +
@@ -202,6 +204,7 @@ ggplot(data = invert_spiral) +
   geom_text(data = invert_label,
             aes(x = x, y = y,
                 label = label),
+            family = "Roboto Condensed",
             size = 2.5,
             hjust = 1) +
   # add title 
